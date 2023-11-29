@@ -205,9 +205,7 @@ def to_gql_span(span: trace_schema.Span) -> "Span":
 
 
 def _json_encode(v: Any) -> str:
-    if isinstance(v, datetime):
-        return v.isoformat()
-    return str(v)
+    return v.isoformat() if isinstance(v, datetime) else str(v)
 
 
 def _trie() -> DefaultDict[str, Any]:

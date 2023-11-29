@@ -257,12 +257,11 @@ def _encode_event(
     if span_event.attributes:
         attributes = Struct()
         attributes.update(span_event.attributes)
-    pb_span_event = pb.Span.Event(
+    return pb.Span.Event(
         name=span_event.name,
         timestamp=timestamp,
         attributes=attributes,
     )
-    return pb_span_event
 
 
 def _decode_event(
@@ -297,7 +296,7 @@ def _encode_exception(
     assert exception_stacktrace is None or isinstance(
         exception_stacktrace, str
     ), f"{EXCEPTION_STACKTRACE} must be str, found {type(exception_stacktrace)}"
-    pb_span_exception = pb.Span.Exception(
+    return pb.Span.Exception(
         timestamp=timestamp,
         message=_maybe_str(exception_message),
         type=_maybe_str(exception_type),
@@ -305,7 +304,6 @@ def _encode_exception(
         stacktrace=_maybe_str(exception_stacktrace),
         attributes=_maybe_struct(_attributes),
     )
-    return pb_span_exception
 
 
 def _decode_exception(

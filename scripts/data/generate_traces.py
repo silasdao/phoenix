@@ -65,7 +65,7 @@ def generate_trace(num_spans: int) -> List[Span]:
     conversation_id = uuid4()
 
     spans: List[Span] = []
-    for i in range(num_spans):
+    for _ in range(num_spans):
         parent_id = spans[-1].context.span_id if spans else None
         start_time = (spans[-1].end_time if spans else fake.date_time_this_year()) + timedelta(
             seconds=random.randint(1, 10)
@@ -196,11 +196,6 @@ def generate_traces(
         for _ in range(num_traces)
     ]
     return list(itertools.chain.from_iterable(traces))
-    return [
-        span
-        for _ in range(num_traces)
-        for span in (generate_trace(random.randint(min_trace_length, max_trace_length)))
-    ]
 
 
 def main() -> None:

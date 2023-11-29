@@ -38,10 +38,7 @@ logger = logging.getLogger(__name__)
 
 # type workaround
 # https://github.com/python/mypy/issues/5264#issuecomment-399407428
-if TYPE_CHECKING:
-    _BaseList = UserList[pd.DataFrame]
-else:
-    _BaseList = UserList
+_BaseList = UserList[pd.DataFrame] if TYPE_CHECKING else UserList
 
 
 class ExportedData(_BaseList):

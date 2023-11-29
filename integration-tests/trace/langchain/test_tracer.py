@@ -192,7 +192,7 @@ class TestTracerFunctionCallAttributes:
 
         assert "France" in response or "French" in response
         assert LLM_FUNCTION_CALL not in attributes
-        assert not any(span.span_kind == SpanKind.TOOL for span in tracer.span_buffer)
+        assert all(span.span_kind != SpanKind.TOOL for span in tracer.span_buffer)
 
     @pytest.fixture
     def agent(self) -> AgentExecutor:

@@ -19,7 +19,7 @@ def truncate_text_by_model(model: BaseEvalModel, text: str, token_buffer: int = 
     max_token_count = model.max_context_size - token_buffer
     tokens = model.get_tokens_from_text(text)
     if len(tokens) > max_token_count:
-        return model.get_text_from_tokens(tokens[:max_token_count]) + "..."
+        return f"{model.get_text_from_tokens(tokens[:max_token_count])}..."
     return text
 
 

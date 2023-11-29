@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt  # type:ignore
 
 
 def remove_all_zeros_rows(df: pd.DataFrame) -> pd.DataFrame:
-    filtered_df = df[
+    return df[
         (
             df[
                 [
@@ -20,7 +20,6 @@ def remove_all_zeros_rows(df: pd.DataFrame) -> pd.DataFrame:
             != 0
         ).any(axis=1)
     ]
-    return filtered_df
 
 
 def plot_mrr_graphs(
@@ -87,7 +86,7 @@ def plot_ndcg_graphs(
 
     max_average_ndcg = 1.1
     # Get unique 'k' values for consistent X-axis
-    set(k for method_data in all_data.values() for k in method_data.keys())
+    {k for method_data in all_data.values() for k in method_data.keys()}
 
     # Create a figure with subplots
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows), squeeze=False)
@@ -149,7 +148,7 @@ def plot_latency_graphs(
                     max_median_latency = current_median
 
     # Get unique 'k' values for consistent X-axis
-    set(k for method_data in all_data.values() for k in method_data.keys())
+    {k for method_data in all_data.values() for k in method_data.keys()}
 
     # Create a figure with subplots
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows), squeeze=False)
@@ -201,7 +200,7 @@ def plot_mean_average_precision_graphs(
 
     max_macp = 1.1
     # Get unique 'k' values for consistent X-axis
-    set(k for method_data in all_data.values() for k in method_data.keys())
+    {k for method_data in all_data.values() for k in method_data.keys()}
 
     # Create a figure with subplots
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows), squeeze=False)
@@ -320,7 +319,7 @@ def plot_percentage_incorrect(
 
     for i, (chunk_size, method_data) in enumerate(sorted(all_data.items())):
         col_counter = 0  # Reset column counter for each chunk_size
-        for j, (method, k_data) in enumerate(sorted(method_data.items())):
+        for method, k_data in sorted(method_data.items()):
             for k, df in k_data.items():
                 if remove_zero:
                     df = remove_all_zeros_rows(df)

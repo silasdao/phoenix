@@ -78,11 +78,10 @@ class Dataset:
         # allow for schema like objects
         if not isinstance(schema, Schema):
             schema = _get_schema_from_unknown_schema_param(schema)
-        errors = validate_dataset_inputs(
+        if errors := validate_dataset_inputs(
             dataframe=dataframe,
             schema=schema,
-        )
-        if errors:
+        ):
             raise err.DatasetError(errors)
         dataframe, schema = _parse_dataframe_and_schema(dataframe, schema)
         dataframe, schema = _normalize_timestamps(
@@ -359,8 +358,7 @@ def _parse_dataframe_and_schema(dataframe: DataFrame, schema: Schema) -> Tuple[D
 
     if unseen_excluded_column_names:
         logger.warning(
-            "The following columns and embedding features were excluded in the schema but were "
-            "not found in the dataframe: {}".format(", ".join(unseen_excluded_column_names))
+            f'The following columns and embedding features were excluded in the schema but were not found in the dataframe: {", ".join(unseen_excluded_column_names)}'
         )
 
     parsed_dataframe, parsed_schema = _create_and_normalize_dataframe_and_schema(
@@ -402,8 +400,7 @@ def _check_multi_column_schema_field_for_excluded_columns(
     """
     Checks multi-column schema fields for excluded columns names.
     """
-    column_names: Optional[List[str]] = getattr(schema, schema_field_name)
-    if column_names:
+    if column_names := getattr(schema, schema_field_name):
         included_column_names: List[str] = []
         excluded_column_names: List[str] = []
         for column_name in column_names:
@@ -507,7 +504,7 @@ def _discover_feature_columns(
     discovered_feature_column_names.sort(key=lambda col: feature_column_name_to_position[col])
     schema_patch["feature_column_names"] = discovered_feature_column_names
     logger.debug(
-        "Discovered feature column names: {}".format(", ".join(discovered_feature_column_names))
+        f'Discovered feature column names: {", ".join(discovered_feature_column_names)}'
     )
 
 
@@ -523,10 +520,11 @@ def _create_and_normalize_dataframe_and_schema(
     standard set of columns (i.e. timestamp and prediction_id) and datatypes for
     those columns.
     """
-    included_column_names: List[str] = []
-    for column_name in dataframe.columns:
-        if column_name_to_include.get(str(column_name), False):
-            included_column_names.append(str(column_name))
+    included_column_names: List[str] = [
+        str(column_name)
+        for column_name in dataframe.columns
+        if column_name_to_include.get(str(column_name), False)
+    ]
     parsed_dataframe = dataframe[included_column_names].copy()
     parsed_schema = replace(schema, excluded_column_names=None, **schema_patch)  # type: ignore
     pred_id_col_name = parsed_schema.prediction_id_column_name

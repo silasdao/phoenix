@@ -143,12 +143,11 @@ def _coerce_dtype_if_necessary(
     try:
         check_classification_targets(series)
     except ValueError as exc:
-        if is_object_dtype(series):
-            try:
-                return series.astype(type(series.iloc[0]))
-            except ValueError:
-                raise exc
-        else:
+        if not is_object_dtype(series):
+            raise exc
+        try:
+            return series.astype(type(series.iloc[0]))
+        except ValueError:
             raise exc
     return series
 
@@ -159,15 +158,14 @@ def _eliminate_missing_values_from_all_series(
 ) -> Tuple[List[Any], Dict[str, Any]]:
     positional_arguments = list(args)
     keyword_arguments = dict(kwargs)
-    all_series = [
+    if all_series := [
         s
         for s in chain(
             args,
             kwargs.values(),
         )
         if isinstance(s, pd.Series)
-    ]
-    if all_series:
+    ]:
         # Remove all rows with any missing value.
         not_na: "pd.Series[bool]" = ~all_series[0].isna()
         for s in islice(all_series, 1, None):
@@ -188,21 +186,20 @@ def _binarize(
     """Given pos_label, converts series into a binary (boolean) variable, i.e.
     rows are assigned True when their values match pos_label, and False
     otherwise. Series is assumed to contain no missing values."""
-    if is_categorical_dtype(series):
-        try:
-            return cast(
-                "pd.Series[bool]",
-                series.cat.codes == series.cat.categories.get_loc(pos_label),
-            )
-        except KeyError:
-            return cast(
-                "pd.Series[bool]",
-                pd.Series(np.full(len(series), False, dtype=bool)),
-            )
-    else:
+    if not is_categorical_dtype(series):
         return cast(
             "pd.Series[bool]",
             series == pos_label,
+        )
+    try:
+        return cast(
+            "pd.Series[bool]",
+            series.cat.codes == series.cat.categories.get_loc(pos_label),
+        )
+    except KeyError:
+        return cast(
+            "pd.Series[bool]",
+            pd.Series(np.full(len(series), False, dtype=bool)),
         )
 
 

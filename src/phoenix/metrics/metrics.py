@@ -96,9 +96,7 @@ class Max(UnaryOperator, Metric):
 class Cardinality(UnaryOperator, Metric):
     def calc(self, dataframe: pd.DataFrame) -> float:
         data = self.operand(dataframe)
-        if data.dtype.kind == "f":
-            return np.nan
-        return cast(float, data.nunique())
+        return np.nan if data.dtype.kind == "f" else cast(float, data.nunique())
 
 
 @dataclass(frozen=True)

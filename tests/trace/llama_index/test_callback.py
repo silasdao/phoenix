@@ -70,7 +70,7 @@ def test_callback_llm(mock_service_context: ServiceContext) -> None:
     # Just check that the callback handler is called using the patched LLM
     assert response.response == "LLM predict"
     spans = list(callback_handler.get_spans())
-    assert len(spans) >= 1
+    assert spans
     # Make sure that the input/output is captured
     assert spans[0].attributes[INPUT_VALUE] == question
     assert spans[0].attributes[OUTPUT_VALUE] == response.response
@@ -275,7 +275,7 @@ def test_custom_llm(mock_embed_model) -> None:
     # Just check that the callback handler is called using the patched LLM
     assert response.response == "LLM Predict"
     spans = list(callback_handler.get_spans())
-    assert len(spans) >= 1
+    assert spans
     llm_spans = [span for span in spans if span.span_kind == SpanKind.LLM]
     assert len(llm_spans) == 1
     # Make sure the custom token counts are captured from the kwargs

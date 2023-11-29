@@ -599,10 +599,7 @@ class TestParseDataFrameAndSchema:
         """
         Scans captured logs to check whether a warning is logged to the user
         """
-        for record in caplog.records:
-            if logging.WARNING == record.levelno:
-                return True
-        return False
+        return any(logging.WARNING == record.levelno for record in caplog.records)
 
     def test_dataset_normalization_columns_already_normalized(self):
         input_dataframe = DataFrame(

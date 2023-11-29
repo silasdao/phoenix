@@ -20,10 +20,14 @@ def get_pids_path() -> Path:
 
 
 def get_running_pid() -> Optional[int]:
-    for file in get_pids_path().iterdir():
-        if file.name.isnumeric():
-            return int(file.name)
-    return None
+    return next(
+        (
+            int(file.name)
+            for file in get_pids_path().iterdir()
+            if file.name.isnumeric()
+        ),
+        None,
+    )
 
 
 for path in (

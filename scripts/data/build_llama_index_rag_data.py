@@ -131,9 +131,11 @@ if __name__ == "__main__":
     first_document_relevances, second_document_relevances = [
         [
             classify_relevance(query_text, document_text, model_name="gpt-4")
-            for query_text, document_text in tqdm(zip(query_texts, first_document_texts))
+            for query_text, document_text in tqdm(
+                zip(query_texts, first_document_texts)
+            )
         ]
-        for document_texts in [first_document_texts, second_document_texts]
+        for _ in [first_document_texts, second_document_texts]
     ]
     list_of_precisions_at_k_lists = [
         compute_precisions_at_k([rel0, rel1])
@@ -154,10 +156,10 @@ if __name__ == "__main__":
     ]
     user_feedback = create_user_feedback(first_document_relevances, second_document_relevances)
     logging.info(
-        f"Thumbs up: {sum([value == 1.0 for value in  user_feedback]) / len(user_feedback)}"
+        f"Thumbs up: {sum(value == 1.0 for value in user_feedback) / len(user_feedback)}"
     )
     logging.info(
-        f"Thumbs down: {sum([value == -1.0 for value in  user_feedback]) / len(user_feedback)}"
+        f"Thumbs down: {sum(value == -1.0 for value in user_feedback) / len(user_feedback)}"
     )
 
     query_dataframe = query_dataframe.assign(

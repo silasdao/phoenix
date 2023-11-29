@@ -28,27 +28,19 @@ def _check_valid_schema(schema: Schema) -> List[err.ValidationError]:
             f"it is already being used as the prediction id column"
         )
 
-    if len(errs) > 0:
-        return [err.InvalidSchemaError(errs)]
-
-    return []
+    return [err.InvalidSchemaError(errs)] if errs else []
 
 
 def validate_dataset_inputs(dataframe: DataFrame, schema: Schema) -> List[err.ValidationError]:
-    errors = _check_missing_columns(dataframe, schema)
-    if errors:
+    if errors := _check_missing_columns(dataframe, schema):
         return errors
-    errors = _check_column_types(dataframe, schema)
-    if errors:
+    if errors := _check_column_types(dataframe, schema):
         return errors
-    errors = _check_valid_schema(schema)
-    if errors:
+    if errors := _check_valid_schema(schema):
         return errors
-    errors = _check_valid_embedding_data(dataframe, schema)
-    if errors:
+    if errors := _check_valid_embedding_data(dataframe, schema):
         return errors
-    errors = _check_valid_prompt_response_data(dataframe, schema)
-    if errors:
+    if errors := _check_valid_prompt_response_data(dataframe, schema):
         return errors
     return []
 
@@ -167,9 +159,7 @@ def _check_column_types(dataframe: DataFrame, schema: Schema) -> List[err.Valida
                 f"{schema.prediction_id_column_name} should be a string or numeric type"
             )
 
-    if len(wrong_type_cols) > 0:
-        return [err.InvalidColumnType(wrong_type_cols)]
-    return []
+    return [err.InvalidColumnType(wrong_type_cols)] if wrong_type_cols else []
 
 
 def _check_missing_columns(dataframe: DataFrame, schema: Schema) -> List[err.ValidationError]:
@@ -184,10 +174,11 @@ def _check_missing_columns(dataframe: DataFrame, schema: Schema) -> List[err.Val
                 missing_columns.append(col)
 
     if schema.feature_column_names is not None:
-        for col in schema.feature_column_names:
-            if col not in existing_columns:
-                missing_columns.append(col)
-
+        missing_columns.extend(
+            col
+            for col in schema.feature_column_names
+            if col not in existing_columns
+        )
     if schema.embedding_feature_column_names is not None:
         for emb_col_names in schema.embedding_feature_column_names.values():
             if emb_col_names.vector_column_name not in existing_columns:
@@ -218,7 +209,4 @@ def _check_missing_columns(dataframe: DataFrame, schema: Schema) -> List[err.Val
             ):
                 missing_columns.append(column_names.link_to_data_column_name)
 
-    if missing_columns:
-        return [err.MissingColumns(missing_columns)]
-
-    return []
+    return [err.MissingColumns(missing_columns)] if missing_columns else []

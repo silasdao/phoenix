@@ -37,7 +37,7 @@ def json_to_span(data: Dict[str, Any]) -> Any:
     A hook for json.loads to convert a dict to a Span object.
     """
     # Check if the dict can be interpreted as a Span
-    if set(data.keys()) == {
+    if set(data.keys()) != {
         "name",
         "context",
         "span_kind",
@@ -50,43 +50,43 @@ def json_to_span(data: Dict[str, Any]) -> Any:
         "events",
         "conversation",
     }:
-        context = data["context"]
-        if not isinstance(context, dict):
-            raise ValueError(f"context should be dict, but context={context}")
-        data["context"] = SpanContext(
-            trace_id=UUID(context["trace_id"]),
-            span_id=UUID(context["span_id"]),
+        return data
+    context = data["context"]
+    if not isinstance(context, dict):
+        raise ValueError(f"context should be dict, but context={context}")
+    data["context"] = SpanContext(
+        trace_id=UUID(context["trace_id"]),
+        span_id=UUID(context["span_id"]),
+    )
+    parent_id = data.get("parent_id")
+    data["parent_id"] = UUID(parent_id) if parent_id else None
+    attributes = data.get("attributes")
+    data["attributes"] = json_to_attributes(attributes)
+    data["start_time"] = datetime.fromisoformat(data["start_time"])
+    data["end_time"] = (
+        datetime.fromisoformat(end_time) if (end_time := data.get("end_time")) else None
+    )
+    data["span_kind"] = SpanKind(data["span_kind"])
+    data["status_code"] = SpanStatusCode(data["status_code"])
+    data["events"] = [
+        SpanException(
+            message=(event.get("attributes") or {}).get(EXCEPTION_MESSAGE) or "",
+            timestamp=datetime.fromisoformat(event["timestamp"]),
         )
-        parent_id = data.get("parent_id")
-        data["parent_id"] = UUID(parent_id) if parent_id else None
-        attributes = data.get("attributes")
-        data["attributes"] = json_to_attributes(attributes)
-        data["start_time"] = datetime.fromisoformat(data["start_time"])
-        data["end_time"] = (
-            datetime.fromisoformat(end_time) if (end_time := data.get("end_time")) else None
+        if event["name"] == "exception"
+        else SpanEvent(
+            name=event["name"],
+            attributes=event.get("attributes") or {},
+            timestamp=datetime.fromisoformat(event["timestamp"]),
         )
-        data["span_kind"] = SpanKind(data["span_kind"])
-        data["status_code"] = SpanStatusCode(data["status_code"])
-        data["events"] = [
-            SpanException(
-                message=(event.get("attributes") or {}).get(EXCEPTION_MESSAGE) or "",
-                timestamp=datetime.fromisoformat(event["timestamp"]),
-            )
-            if event["name"] == "exception"
-            else SpanEvent(
-                name=event["name"],
-                attributes=event.get("attributes") or {},
-                timestamp=datetime.fromisoformat(event["timestamp"]),
-            )
-            for event in data["events"]
-        ]
-        data["conversation"] = (
-            SpanConversationAttributes(**data["conversation"])
-            if data["conversation"] is not None
-            else None
-        )
-        return Span(**data)
-    return data
+        for event in data["events"]
+    ]
+    data["conversation"] = (
+        SpanConversationAttributes(**data["conversation"])
+        if data["conversation"] is not None
+        else None
+    )
+    return Span(**data)
 
 
 def json_string_to_span(json_string: str) -> Span:

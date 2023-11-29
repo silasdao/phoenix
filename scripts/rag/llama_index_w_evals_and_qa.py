@@ -54,18 +54,13 @@ logger = logging.getLogger("evals")
 # URL and Website download utilities
 def get_urls(base_url: str) -> List[str]:
     if not base_url.endswith("/"):
-        base_url = base_url + "/"
+        base_url += "/"
     page = requests.get(f"{base_url}sitemap.xml")
     scraper = BeautifulSoup(page.content, "xml")
 
-    urls_from_xml = []
-
     loc_tags = scraper.find_all("loc")
 
-    for loc in loc_tags:
-        urls_from_xml.append(loc.get_text())
-
-    return urls_from_xml
+    return [loc.get_text() for loc in loc_tags]
 
 
 # Plots
@@ -87,27 +82,25 @@ def get_transformation_query_engine(index, name, k, llama_index_model):
         llama_debug = LlamaDebugHandler(print_trace_on_end=True)
         callback_manager = CallbackManager([llama_debug])
         service_context = ServiceContext.from_defaults(
-            llm=OpenAI(temperature=float(0.6), model=llama_index_model),
+            llm=OpenAI(temperature=0.6, model=llama_index_model),
             callback_manager=callback_manager,
         )
-        query_engine = index.as_query_engine(
+        return index.as_query_engine(
             similarity_top_k=k,
             response_mode="compact",
             service_context=service_context,
-        )  # response mode can also be parameterized
-        return query_engine
+        )
     elif name == "original_rerank":
         cohere_rerank = CohereRerank(api_key=cohere.api_key, top_n=k)
         service_context = ServiceContext.from_defaults(
             llm=OpenAI(temperature=0.6, model=llama_index_model)
         )
-        query_engine = index.as_query_engine(
+        return index.as_query_engine(
             similarity_top_k=k * 2,
             response_mode="refine",  # response mode can also be parameterized
             service_context=service_context,
             node_postprocessors=[cohere_rerank],
         )
-        return query_engine
     elif name == "hyde":
         service_context = ServiceContext.from_defaults(
             llm=OpenAI(temperature=0.6, model=llama_index_model)  # change to model
@@ -116,10 +109,7 @@ def get_transformation_query_engine(index, name, k, llama_index_model):
             similarity_top_k=k, response_mode="refine", service_context=service_context
         )
         hyde = HyDEQueryTransform(include_original=True)
-        hyde_query_engine = TransformQueryEngine(query_engine, hyde)
-
-        return hyde_query_engine
-
+        return TransformQueryEngine(query_engine, hyde)
     elif name == "hyde_rerank":
         cohere_rerank = CohereRerank(api_key=cohere.api_key, top_n=k)
 
@@ -136,26 +126,20 @@ def get_transformation_query_engine(index, name, k, llama_index_model):
             node_postprocessors=[cohere_rerank],
         )
         hyde = HyDEQueryTransform(include_original=True)
-        hyde_rerank_query_engine = TransformQueryEngine(query_engine, hyde)
-
-        return hyde_rerank_query_engine
-
+        return TransformQueryEngine(query_engine, hyde)
     elif name == "multistep":
         gpt4 = OpenAI(temperature=0.6, model=llama_index_model)
         service_context_gpt4 = ServiceContext.from_defaults(llm=gpt4)
 
         step_decompose_transform = StepDecomposeQueryTransform(LLMPredictor(llm=gpt4), verbose=True)
 
-        multi_query_engine = MultiStepQueryEngine(
+        return MultiStepQueryEngine(
             query_engine=index.as_query_engine(
                 service_context=service_context_gpt4, similarity_top_k=k
             ),
             query_transform=step_decompose_transform,
             index_summary="documentation",  # llama index isn't really clear on how this works
         )
-
-        return multi_query_engine
-
     else:
         return
 
@@ -203,8 +187,7 @@ def run_experiments(
 
             query_transformation_data = {name: [] for name in engines}
             # Loop through query engines - testing each
-            for name in engines:
-                engine = engines[name]
+            for name, engine in engines.items():
                 if chunk_size not in all_data:
                     all_data[chunk_size] = {}
                 if name not in all_data[chunk_size]:
@@ -363,10 +346,7 @@ def compute_average_precision_at_i(evals, cpis, i):
 
 
 def get_rank(evals):
-    for i, eval in enumerate(evals):
-        if eval == 1:
-            return i + 1
-    return np.inf
+    return next((i + 1 for i, eval in enumerate(evals) if eval == 1), np.inf)
 
 
 # Run performance metrics on row of Evals data
@@ -397,7 +377,6 @@ def main():
 
     # if loading from scratch, change these below
     web_title = "arize"  # nickname for this website, used for saving purposes
-    base_url = "https://docs.arize.com/arize"
     # Local files
     file_name = "raw_documents.pkl"
     save_base = "./experiment_data/"
@@ -418,6 +397,7 @@ def main():
     # two options here, either get the documents from scratch or load one from disk
     if not os.path.exists(raw_docs_filepath):
         logger.info(f"'{raw_docs_filepath}' does not exists.")
+        base_url = "https://docs.arize.com/arize"
         urls = get_urls(base_url)  # you need to - pip install lxml
         logger.info(f"LOADED {len(urls)} URLS")
 

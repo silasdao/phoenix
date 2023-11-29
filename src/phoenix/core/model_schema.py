@@ -519,10 +519,7 @@ def _is_multi_dimension_key(
     if isinstance(key, str):
         return False
     try:
-        for k in iter(key):
-            if not isinstance(k, DimensionRole):
-                return False
-        return True
+        return all(isinstance(k, DimensionRole) for k in iter(key))
     except TypeError:
         return isinstance(key, MultiDimensionalRole)
 
@@ -1448,9 +1445,7 @@ def _jsonify(obj: Any) -> Any:
         return obj
     if isinstance(obj, Iterable):
         return list(map(_jsonify, iter(obj)))
-    if isinstance(obj, float) and math.isnan(obj):
-        return None
-    return obj
+    return None if isinstance(obj, float) and math.isnan(obj) else obj
 
 
 def _objectify(json_data: Any) -> Any:
@@ -1466,5 +1461,4 @@ def _objectify(json_data: Any) -> Any:
             return cls(**json_data)  # type: ignore
         except TypeError:
             pass
-    raise ValueError(f"invalid json data: {repr(json_data)}")
     raise ValueError(f"invalid json data: {repr(json_data)}")

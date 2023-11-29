@@ -233,9 +233,7 @@ def _get_request_type(url: str) -> Optional[RequestType]:
         return RequestType.CHAT_COMPLETION
     if "completions" in url:
         return RequestType.COMPLETION
-    if "embeddings" in url:
-        return RequestType.EMBEDDING
-    return None
+    return RequestType.EMBEDDING if "embeddings" in url else None
 
 
 def _to_openinference_message(
