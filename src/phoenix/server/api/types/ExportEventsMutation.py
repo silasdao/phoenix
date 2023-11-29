@@ -33,12 +33,13 @@ class ExportEventsMutation:
         if not isinstance(file_name, str):
             file_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         row_ids = parse_event_ids_by_dataset_role(event_ids)
-        exclude_corpus_row_ids = {}
-        for dataset_role in list(row_ids.keys()):
-            if isinstance(dataset_role, DatasetRole):
-                exclude_corpus_row_ids[dataset_role.value] = row_ids[dataset_role]
+        exclude_corpus_row_ids = {
+            dataset_role.value: row_ids[dataset_role]
+            for dataset_role in list(row_ids.keys())
+            if isinstance(dataset_role, DatasetRole)
+        }
         path = info.context.export_path
-        with open(path / (file_name + ".parquet"), "wb") as fd:
+        with open(path / f"{file_name}.parquet", "wb") as fd:
             loop = asyncio.get_running_loop()
             await loop.run_in_executor(
                 None,
@@ -65,7 +66,7 @@ class ExportEventsMutation:
             file_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         row_numbers, cluster_ids = _unpack_clusters(clusters)
         path = info.context.export_path
-        with open(path / (file_name + ".parquet"), "wb") as fd:
+        with open(path / f"{file_name}.parquet", "wb") as fd:
             loop = asyncio.get_running_loop()
             await loop.run_in_executor(
                 None,

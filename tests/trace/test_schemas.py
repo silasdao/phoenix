@@ -84,13 +84,19 @@ def test_pb_span_encode_decode():
     span_id_base64 = b64encode(span_id.bytes).decode("utf-8")
     parent_span_id_base64 = b64encode(parent_span_id.bytes).decode("utf-8")
     start_time = datetime.now(timezone.utc) - timedelta(weeks=1)
-    start_time_rfc3339 = start_time.astimezone(timezone.utc).isoformat()[:-6] + "Z"
+    start_time_rfc3339 = f"{start_time.astimezone(timezone.utc).isoformat()[:-6]}Z"
     event1_time = datetime.now(pytz.timezone("Asia/Kolkata")) - timedelta(days=1)
-    event1_time_rfc3339 = event1_time.astimezone(timezone.utc).isoformat()[:-6] + "Z"
+    event1_time_rfc3339 = (
+        f"{event1_time.astimezone(timezone.utc).isoformat()[:-6]}Z"
+    )
     event2_time = datetime.now(pytz.timezone("Asia/Kolkata")) - timedelta(hours=1)
-    event2_time_rfc3339 = event2_time.astimezone(timezone.utc).isoformat()[:-6] + "Z"
+    event2_time_rfc3339 = (
+        f"{event2_time.astimezone(timezone.utc).isoformat()[:-6]}Z"
+    )
     event3_time = datetime.now(pytz.timezone("Asia/Kolkata")) - timedelta(minutes=1)
-    event3_time_rfc3339 = event3_time.astimezone(timezone.utc).isoformat()[:-6] + "Z"
+    event3_time_rfc3339 = (
+        f"{event3_time.astimezone(timezone.utc).isoformat()[:-6]}Z"
+    )
     span = Span(
         name="test",
         parent_id=parent_span_id,

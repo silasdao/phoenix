@@ -49,5 +49,4 @@ def llm_generate(
         logger.info(f"Template variables: {template.variables}")
         prompts = map_template(dataframe, template)
 
-        responses = verbose_model.generate(prompts.to_list(), system_instruction)
-        return responses
+        return verbose_model.generate(prompts.to_list(), system_instruction)

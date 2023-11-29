@@ -12,7 +12,7 @@ class Interceptor(ABC):
     _name: str
 
     def __set_name__(self, _: Any, name: str) -> None:
-        self._name = "_" + name
+        self._name = f"_{name}"
 
     def __get__(self, obj: Any, _: Any = None) -> Any:
         return self if obj is None else getattr(obj, self._name)

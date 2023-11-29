@@ -42,8 +42,8 @@ from phoenix.trace.v1 import decode, encode
 NAME = "name"
 STATUS_CODE = "status_code"
 SPAN_KIND = "span_kind"
-TRACE_ID = CONTEXT_PREFIX + "trace_id"
-SPAN_ID = CONTEXT_PREFIX + "span_id"
+TRACE_ID = f"{CONTEXT_PREFIX}trace_id"
+SPAN_ID = f"{CONTEXT_PREFIX}span_id"
 PARENT_ID = "parent_id"
 START_TIME = "start_time"
 END_TIME = "end_time"
@@ -52,14 +52,20 @@ LLM_TOKEN_COUNT_PROMPT = ATTRIBUTE_PREFIX + semantic_conventions.LLM_TOKEN_COUNT
 LLM_TOKEN_COUNT_COMPLETION = ATTRIBUTE_PREFIX + semantic_conventions.LLM_TOKEN_COUNT_COMPLETION
 
 
+
+
 class ComputedAttributes(Enum):
     # Enum value must be string prefixed by COMPUTED_PREFIX
-    LATENCY_MS = (
-        COMPUTED_PREFIX + "latency_ms"
-    )  # The latency (or duration) of the span in milliseconds
-    CUMULATIVE_LLM_TOKEN_COUNT_TOTAL = COMPUTED_PREFIX + "cumulative_token_count.total"
-    CUMULATIVE_LLM_TOKEN_COUNT_PROMPT = COMPUTED_PREFIX + "cumulative_token_count.prompt"
-    CUMULATIVE_LLM_TOKEN_COUNT_COMPLETION = COMPUTED_PREFIX + "cumulative_token_count.completion"
+    LATENCY_MS = f"{COMPUTED_PREFIX}latency_ms"
+    CUMULATIVE_LLM_TOKEN_COUNT_TOTAL = (
+        f"{COMPUTED_PREFIX}cumulative_token_count.total"
+    )
+    CUMULATIVE_LLM_TOKEN_COUNT_PROMPT = (
+        f"{COMPUTED_PREFIX}cumulative_token_count.prompt"
+    )
+    CUMULATIVE_LLM_TOKEN_COUNT_COMPLETION = (
+        f"{COMPUTED_PREFIX}cumulative_token_count.completion"
+    )
 
 
 class ReadableSpan(ObjectProxy):  # type: ignore
@@ -199,10 +205,7 @@ class Traces:
 
     @property
     def token_count_total(self) -> int:
-        count = 0
-        for span in self._spans.values():
-            count += span[LLM_TOKEN_COUNT_TOTAL] or 0
-        return count
+        return sum(span[LLM_TOKEN_COUNT_TOTAL] or 0 for span in self._spans.values())
 
     @property
     def right_open_time_range(self) -> Tuple[Optional[datetime], Optional[datetime]]:

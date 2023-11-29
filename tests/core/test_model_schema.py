@@ -44,12 +44,12 @@ def test_role_precedence() -> None:
     schema = Schema(prediction_id=prediction_id, features=[prediction_id])
     model = schema(pd.DataFrame())
     assert model[PREDICTION_ID].name == prediction_id
-    assert len(list(model[FEATURE])) == 0
+    assert not list(model[FEATURE])
     schema = Schema(features=[prediction_id], tags=[prediction_id])
     model = schema(pd.DataFrame())
     assert next(model[FEATURE]).name == prediction_id
     assert len(list(model[FEATURE])) == 1
-    assert len(list(model[TAG])) == 0
+    assert not list(model[TAG])
 
 
 def test_column_names_coerced_to_str():
@@ -116,7 +116,7 @@ FULL_SCHEMA = Schema(
 
 
 def test_iterable_column_names():
-    assert set(iter(Schema())) == set()
+    assert not set(iter(Schema()))
     desired_names = (
         set("ABCDEFGHIJKLMNRSTU")
         | {"ID", "TS"}
@@ -177,7 +177,7 @@ def test_singular_dimensional_role_one_df(
             if dim_role is role:
                 assert not model[dim_role].is_dummy
                 assert model[role].display_name == display_name
-                column_names_equal = 1 == len(set(map(str, (model[role], column_spec))))
+                column_names_equal = len(set(map(str, (model[role], column_spec)))) == 1
                 if role is TIMESTAMP and column_spec in df.columns:
                     # if the original column exists, TIME will add a new
                     # one with normalized values, so the original is not

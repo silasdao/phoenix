@@ -393,8 +393,10 @@ def _add_spans_to_tracer(
         )
         span_exceptions = []
         new_parent_span_id = span.context.span_id
-        for new_child_event_id in trace_map.get(event_id, []):
-            parent_child_id_stack.append((new_parent_span_id, new_child_event_id))
+        parent_child_id_stack.extend(
+            (new_parent_span_id, new_child_event_id)
+            for new_child_event_id in trace_map.get(event_id, [])
+        )
 
 
 def _get_span_kind(event_type: CBEventType) -> SpanKind:
@@ -417,33 +419,29 @@ def _get_span_kind(event_type: CBEventType) -> SpanKind:
 
 
 def _message_payload_to_attributes(message: Any) -> Dict[str, Optional[str]]:
-    if isinstance(message, ChatMessage):
-        message_attributes = {
-            MESSAGE_ROLE: message.role.value,
-            MESSAGE_CONTENT: message.content,
+    if not isinstance(message, ChatMessage):
+        return {
+            MESSAGE_ROLE: "user",  # assume user if not ChatMessage
+            MESSAGE_CONTENT: str(message),
         }
-        # Parse the kwargs to extract the function name and parameters for function calling
-        # NB: these additional kwargs exist both for 'agent' and 'function' roles
-        if "name" in message.additional_kwargs:
-            message_attributes[MESSAGE_NAME] = message.additional_kwargs["name"]
-        if "function_call" in message.additional_kwargs:
-            function_call = message.additional_kwargs["function_call"]
-            message_attributes[MESSAGE_FUNCTION_CALL_ARGUMENTS_JSON] = function_call.arguments
-            message_attributes[MESSAGE_FUNCTION_CALL_NAME] = function_call.name
-        return message_attributes
-
-    return {
-        MESSAGE_ROLE: "user",  # assume user if not ChatMessage
-        MESSAGE_CONTENT: str(message),
+    message_attributes = {
+        MESSAGE_ROLE: message.role.value,
+        MESSAGE_CONTENT: message.content,
     }
+    # Parse the kwargs to extract the function name and parameters for function calling
+    # NB: these additional kwargs exist both for 'agent' and 'function' roles
+    if "name" in message.additional_kwargs:
+        message_attributes[MESSAGE_NAME] = message.additional_kwargs["name"]
+    if "function_call" in message.additional_kwargs:
+        function_call = message.additional_kwargs["function_call"]
+        message_attributes[MESSAGE_FUNCTION_CALL_ARGUMENTS_JSON] = function_call.arguments
+        message_attributes[MESSAGE_FUNCTION_CALL_NAME] = function_call.name
+    return message_attributes
 
 
 def _message_payload_to_str(message: Any) -> Optional[str]:
     """Converts a message payload to a string, if possible"""
-    if isinstance(message, ChatMessage):
-        return message.content
-
-    return str(message)
+    return message.content if isinstance(message, ChatMessage) else str(message)
 
 
 def _get_response_output(response: Any) -> Iterator[Tuple[str, Any]]:

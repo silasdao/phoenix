@@ -13,6 +13,4 @@ class DimensionDataType(Enum):
     @classmethod
     def from_dimension(cls, dimension: Dimension) -> "DimensionDataType":
         data_type = dimension.data_type
-        if data_type in (CONTINUOUS,):
-            return cls.numeric
-        return cls.categorical
+        return cls.numeric if data_type in (CONTINUOUS,) else cls.categorical

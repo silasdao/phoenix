@@ -121,13 +121,18 @@ class Schema:
 
         # parse embedding_feature_column_names
         if json_data.get("embedding_feature_column_names") is not None:
-            embedding_feature_column_names = {}
-            for feature_name, column_names in json_data["embedding_feature_column_names"].items():
-                embedding_feature_column_names[feature_name] = EmbeddingColumnNames(
+            embedding_feature_column_names = {
+                feature_name: EmbeddingColumnNames(
                     vector_column_name=column_names["vector_column_name"],
                     raw_data_column_name=column_names["raw_data_column_name"],
-                    link_to_data_column_name=column_names["link_to_data_column_name"],
+                    link_to_data_column_name=column_names[
+                        "link_to_data_column_name"
+                    ],
                 )
+                for feature_name, column_names in json_data[
+                    "embedding_feature_column_names"
+                ].items()
+            }
             json_data["embedding_feature_column_names"] = embedding_feature_column_names
 
         # parse prompt_column_names

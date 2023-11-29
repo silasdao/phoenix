@@ -46,7 +46,7 @@ class Service:
             )
             Service.stop_any()
 
-        process = psutil.Popen(
+        return psutil.Popen(
             self.command,
             cwd=self.working_dir,
             stdout=subprocess.PIPE,
@@ -55,7 +55,6 @@ class Service:
             text=True,
             env={**os.environ},
         )
-        return process
 
     @property
     def active(self) -> bool:

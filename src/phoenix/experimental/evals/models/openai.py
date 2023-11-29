@@ -161,9 +161,7 @@ class OpenAIModel(BaseEvalModel):
         )
         if self._model_uses_legacy_completion_api:
             return str(response["choices"][0]["text"])
-        # TODO: This is a bit rudimentary, should improve
-        resp_text = str(response["choices"][0]["message"]["content"])
-        return resp_text
+        return str(response["choices"][0]["message"]["content"])
 
     def _generate_with_retry(self, **kwargs: Any) -> Any:
         """Use tenacity to retry the completion call."""

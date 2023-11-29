@@ -376,7 +376,7 @@ def test_openai_instrumentor_does_not_interfere_with_completions_api(
     spans = list(tracer.get_spans())
 
     assert "france" in response_text.lower() or "french" in response_text.lower()
-    assert spans == []
+    assert not spans
 
 
 @responses.activate

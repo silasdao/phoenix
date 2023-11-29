@@ -57,7 +57,6 @@ class PromptTemplate:
             )
 
     def _parse_variables(self) -> List[str]:
-        variables = []
         formatter = Formatter()
 
         text = self.text
@@ -70,9 +69,14 @@ class PromptTemplate:
                 left_index = text.find(self._start_delim)
                 right_index = text[left_index + delim_length :].find(self._start_delim)
                 text = (
-                    text[0:left_index]
+                    text[:left_index]
                     + DEFAULT_START_DELIM
-                    + text[left_index + delim_length : left_index + delim_length + right_index]
+                    + text[
+                        left_index
+                        + delim_length : left_index
+                        + delim_length
+                        + right_index
+                    ]
                     + DEFAULT_END_DELIM
                     + text[left_index + 2 * delim_length + right_index :]
                 )
@@ -83,11 +87,11 @@ class PromptTemplate:
             if self._end_delim != "{":
                 text = text.replace(self._end_delim, DEFAULT_END_DELIM)
 
-        for _, variable_name, _, _ in formatter.parse(text):
-            if variable_name:
-                variables.append(variable_name)
-
-        return variables
+        return [
+            variable_name
+            for _, variable_name, _, _ in formatter.parse(text)
+            if variable_name
+        ]
 
 
 def normalize_template(template: Union[PromptTemplate, str]) -> PromptTemplate:
@@ -120,13 +124,14 @@ def map_template(dataframe: pd.DataFrame, template: PromptTemplate) -> "pd.Serie
     # answers so that, if there is an error, we keep the answers obtained up to that point.
     # These are out of scope for M0, but good to keep in mind and consider for the future.
     try:
-        prompts = dataframe.apply(
+        return dataframe.apply(
             lambda row: template.format(
-                variable_values={var_name: row[var_name] for var_name in template.variables}
+                variable_values={
+                    var_name: row[var_name] for var_name in template.variables
+                }
             ),
             axis=1,
         )
-        return prompts
     except KeyError as e:
         raise RuntimeError(
             f"Error while constructing the prompts from the template and dataframe. "

@@ -9,9 +9,7 @@ from llama_index.llms.mock import LLMMetadata, MockLLM
 
 def patch_token_splitter_newline(text: str, metadata_str: Optional[str] = None) -> List[str]:
     """Mock token splitter by newline."""
-    if text == "":
-        return []
-    return text.split("\n")
+    return [] if not text else text.split("\n")
 
 
 def patch_llmpredictor_predict(*prompt_args: Any, **prompt_kwargs: Any):
@@ -78,7 +76,6 @@ class MockEmbedding(BaseEmbedding):
         """Mock get query embedding."""
         if query == "Query?":
             return [0, 0, 1, 0, 0]
-            raise ValueError("Invalid query for `_get_query_embedding`.")
 
     def _get_text_embedding(self, text: str) -> List[float]:
         """Mock get text embedding."""

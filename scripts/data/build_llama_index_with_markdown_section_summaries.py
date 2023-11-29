@@ -105,9 +105,10 @@ if __name__ == "__main__":
     markdown_files = read_markdown_files(docpath)
     for filepath, md in markdown_files.items():
         splits, headers = markdown_header_splitter(md)
-        for text, header in zip(splits, headers):
-            docs.append(Document(text=text, metadata={"headers": header}))
-
+        docs.extend(
+            Document(text=text, metadata={"headers": header})
+            for text, header in zip(splits, headers)
+        )
     # nodes
     logger.info("Extracting metadata from each chunk...")
     nodes = SimpleNodeParser.from_defaults(

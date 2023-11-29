@@ -6,6 +6,4 @@ T = TypeVar("T")
 def ensure_list(obj: Optional[Iterable[T]]) -> List[T]:
     if isinstance(obj, List):
         return obj
-    if isinstance(obj, Iterable):
-        return list(obj)
-    return []
+    return list(obj) if isinstance(obj, Iterable) else []

@@ -59,9 +59,7 @@ def _langchain_run_type_to_span_kind(run_type: str) -> SpanKind:
 
 
 def _serialize_json(obj: Any) -> str:
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    return str(obj)
+    return obj.isoformat() if isinstance(obj, datetime) else str(obj)
 
 
 def _convert_io(obj: Optional[Dict[str, Any]]) -> Iterator[Any]:
@@ -378,7 +376,7 @@ class OpenInferenceTracer(Tracer, BaseTracer):
         execution_order = self._get_execution_order(parent_run_id_)
         start_time = datetime.utcnow()
         if metadata:
-            kwargs.update({"metadata": metadata})
+            kwargs["metadata"] = metadata
         run = Run(
             id=run_id,
             parent_run_id=parent_run_id,

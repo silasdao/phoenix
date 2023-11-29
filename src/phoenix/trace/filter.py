@@ -45,13 +45,13 @@ def _as_str(value: ast.expr) -> ast.Call:
 
 
 def _ast_replacement(expression: str) -> ast.expr:
-    as_str = expression in (
+    as_str = expression in {
         "span.status_code",
         "span.span_kind",
         "span.parent_id",
         "span.context.span_id",
         "span.context.trace_id",
-    )
+    }
     return _replace_none_with_missing(ast.parse(expression, mode="eval").body, as_str)
 
 
@@ -63,15 +63,15 @@ def _allowed_replacements() -> Iterator[Tuple[str, ast.expr]]:
         "parent_id": _ast_replacement("span.parent_id"),
     }.items():
         yield source_segment, ast_replacement
-        yield "span." + source_segment, ast_replacement
+        yield (f"span.{source_segment}", ast_replacement)
 
     for source_segment, ast_replacement in {
         "span_id": _ast_replacement("span.context.span_id"),
         "trace_id": _ast_replacement("span.context.trace_id"),
     }.items():
         yield source_segment, ast_replacement
-        yield "context." + source_segment, ast_replacement
-        yield "span.context." + source_segment, ast_replacement
+        yield (f"context.{source_segment}", ast_replacement)
+        yield (f"span.context.{source_segment}", ast_replacement)
 
     for field_name in (
         getattr(semantic_conventions, variable_name)
@@ -81,8 +81,8 @@ def _allowed_replacements() -> Iterator[Tuple[str, ast.expr]]:
         source_segment = field_name
         ast_replacement = _ast_replacement(f"span.attributes.get('{field_name}')")
         yield source_segment, ast_replacement
-        yield "attributes." + source_segment, ast_replacement
-        yield "span.attributes." + source_segment, ast_replacement
+        yield (f"attributes.{source_segment}", ast_replacement)
+        yield (f"span.attributes.{source_segment}", ast_replacement)
 
     for computed_attribute in ComputedAttributes:
         field_name = computed_attribute.value

@@ -23,7 +23,7 @@ def test_span_filter() -> None:
         assert list(filter(SpanFilter(f"{k} < 0.5"), spans)) == [span_0]
         assert list(filter(SpanFilter(f"{k} >= 0.5"), spans)) == [span_1]
         assert list(filter(SpanFilter(f"{k} <= 0.5"), spans)) == [span_0]
-        assert list(filter(SpanFilter(f"{k} == 0.5"), spans)) == []
+        assert not list(filter(SpanFilter(f"{k} == 0.5"), spans))
         assert list(filter(SpanFilter(f"{k} != 0.5"), spans)) == [span_0, span_1]
         assert list(filter(SpanFilter(f"{k} is not None"), spans)) == [span_0, span_1]
         assert list(filter(SpanFilter(f"{k} is None"), spans)) == [span_2]

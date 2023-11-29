@@ -66,6 +66,7 @@ class DimensionFilter:
             return False
         if self.shapes and DimensionShape.from_dimension(dimension) not in self.shapes:
             return False
-        if self.data_types and DimensionDataType.from_dimension(dimension) not in self.data_types:
-            return False
-        return True
+        return (
+            not self.data_types
+            or DimensionDataType.from_dimension(dimension) in self.data_types
+        )

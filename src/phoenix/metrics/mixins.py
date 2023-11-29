@@ -29,9 +29,7 @@ from phoenix.metrics.binning import (
 class ZeroInitialValue(ABC):
     @property
     def initial_value(self) -> Any:
-        if isinstance(self, VectorOperator):
-            return np.zeros(self.shape)
-        return 0
+        return np.zeros(self.shape) if isinstance(self, VectorOperator) else 0
 
 
 @dataclass(frozen=True)
@@ -63,10 +61,7 @@ Predicted: TypeAlias = "pd.Series[Any]"
 
 # workaround for type checker
 # https://github.com/python/mypy/issues/5446#issuecomment-412043677
-if TYPE_CHECKING:
-    _BaseMapping = Mapping[str, Any]
-else:
-    _BaseMapping = collections.abc.Mapping
+_BaseMapping = Mapping[str, Any] if TYPE_CHECKING else collections.abc.Mapping
 
 
 @dataclass(frozen=True)

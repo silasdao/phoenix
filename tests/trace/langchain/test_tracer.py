@@ -65,7 +65,7 @@ def test_tracer_llm() -> None:
 
     spans = {span.name: span for span in tracer.span_buffer}
 
-    trace_ids = set(span.context.trace_id for span in spans.values())
+    trace_ids = {span.context.trace_id for span in spans.values()}
     assert len(trace_ids) == 1
     assert UUID(str(next(iter(trace_ids))))
 

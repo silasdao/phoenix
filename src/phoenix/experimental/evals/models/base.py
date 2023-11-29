@@ -57,11 +57,7 @@ class BaseEvalModel(ABC):
         """Create a retry decorator for a given LLM and provided list of error types."""
 
         def log_retry(retry_state: RetryCallState) -> None:
-            if fut := retry_state.outcome:
-                exc = fut.exception()
-            else:
-                exc = None
-
+            exc = fut.exception() if (fut := retry_state.outcome) else None
             if exc:
                 printif(
                     self._verbose,

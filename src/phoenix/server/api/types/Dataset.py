@@ -43,7 +43,7 @@ class Dataset(DatasetInfo):
         events = self.dataset[row_ids[self.dataset_role]]
         requested_gql_dimensions = _get_requested_features_and_tags(
             core_dimensions=self.model.scalar_dimensions,
-            requested_dimension_names=set(dim.name for dim in dimensions)
+            requested_dimension_names={dim.name for dim in dimensions}
             if isinstance(dimensions, list)
             else None,
         )
